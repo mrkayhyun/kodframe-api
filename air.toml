@@ -1,0 +1,5 @@
+[build]
+cmd = "go build -o ./build/kodframe-api ."
+bin = "./build/kodframe-api"
+include_ext = ["go"]
+exclude_dir = []
