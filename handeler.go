@@ -12,6 +12,7 @@ import (
 
 var db *gorm.DB
 
+// 환경변수에서 DB 접속 정보를 가져와서 커넥션을 만든다.
 func InitDB() error {
 	// 환경변수 로드
 	err := godotenv.Load()
@@ -36,13 +37,15 @@ func InitDB() error {
 	return nil
 }
 
+// id 라는 이름의 테이블이 존재하는지 체크 후 데이터를 반환한다.
+// Todo : 로우수를 제한 하는 로직 넣어야 됨
 func getApiHandler(g *gin.Context) {
 	id := g.Param("id")
 
 	rows, err := db.Table(id).Rows()
 	if err != nil {
 		log.Println("Failed to query table:", err)
-		g.IndentedJSON(http.StatusOK, ApiResult{"no_table", err.Error(), nil})
+		g.IndentedJSON(http.StatusOK, ApiResult{"no_table", err.Error(), ApiBody{}})
 		return
 	}
 	defer rows.Close()
@@ -54,6 +57,7 @@ func getApiHandler(g *gin.Context) {
 	}
 
 	var results []map[string]interface{}
+	var rowCount int
 
 	for rows.Next() {
 		row := make(map[string]interface{})
@@ -78,11 +82,13 @@ func getApiHandler(g *gin.Context) {
 		}
 
 		results = append(results, row)
+		rowCount++
 	}
 
-	g.IndentedJSON(http.StatusOK, ApiResult{"success", id + " table is selected", results})
+	g.IndentedJSON(http.StatusOK, ApiResult{"success", id + " table is selected", ApiBody{rowCount, results}})
 }
 
+// 해당 DB의 테이블 명을 반환한다.
 func getTablesHandler(g *gin.Context) {
 	rows, err := db.Raw("SHOW TABLES").Rows()
 	if err != nil {
@@ -91,6 +97,7 @@ func getTablesHandler(g *gin.Context) {
 	defer rows.Close()
 
 	var tables []Table
+	var rowCount int
 
 	for rows.Next() {
 		var tableName string
@@ -98,10 +105,12 @@ func getTablesHandler(g *gin.Context) {
 			log.Fatalf("Error scanning row: %v", err)
 		}
 		tables = append(tables, Table{TableName: tableName})
+		rowCount++
 	}
-	g.IndentedJSON(http.StatusOK, ApiResult{"success", "", tables})
+	g.IndentedJSON(http.StatusOK, ApiResult{"success", "", ApiBody{rowCount, tables}})
 }
 
+// id 라는 이름의 테이블 구조를 반환한다.
 func getTableHandler(g *gin.Context) {
 	id := g.Param("id")
 
@@ -111,6 +120,7 @@ func getTableHandler(g *gin.Context) {
 	}
 
 	var columns []TableDesc
+	var rowCount int
 
 	for rows.Next() {
 		var desc TableDesc
@@ -118,7 +128,8 @@ func getTableHandler(g *gin.Context) {
 			log.Fatalf("Error scanning row: %v", err)
 		}
 		columns = append(columns, desc)
+		rowCount++
 	}
 
-	g.IndentedJSON(http.StatusOK, ApiResult{"success", id + " table desc", columns})
+	g.IndentedJSON(http.StatusOK, ApiResult{"success", id + " table desc", ApiBody{rowCount, columns}})
 }

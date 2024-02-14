@@ -1,9 +1,14 @@
 package main
 
 type ApiResult struct {
-	Code    string      `json:"code"`
-	Message string      `json:"message"`
-	Body    interface{} `json:"body"`
+	Code    string  `json:"code"`
+	Message string  `json:"message"`
+	Body    ApiBody `json:"body"`
+}
+
+type ApiBody struct {
+	RowCount int         `json:"rowCount"`
+	Result   interface{} `json:"result"`
 }
 
 type Table struct {
