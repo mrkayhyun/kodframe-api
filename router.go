@@ -13,6 +13,11 @@ func SetupRouter() *gin.Engine {
 	}
 
 	r := gin.Default()
+
+	// middleware
+	//r.Use(DummyMiddleware)
+	r.Use(IpAccessMiddleware)
+
 	// api
 	r.GET("/api/:id", getApiHandler)
 	// db
