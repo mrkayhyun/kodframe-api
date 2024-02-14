@@ -13,6 +13,7 @@ import (
 var db *gorm.DB
 
 func InitDB() error {
+	// 환경변수 로드
 	err := godotenv.Load()
 	if err != nil {
 		return err
@@ -46,34 +47,27 @@ func getApiHandler(g *gin.Context) {
 	}
 	defer rows.Close()
 
-	// Get column names
 	columns, err := rows.Columns()
 	if err != nil {
 		log.Println("Failed to get columns:", err)
 		return
 	}
 
-	// Create a slice to store the results
 	var results []map[string]interface{}
 
-	// Iterate over the rows
 	for rows.Next() {
-		// Create a map to store the current row data
 		row := make(map[string]interface{})
 
-		// Create a slice to hold the values
 		values := make([]interface{}, len(columns))
 		for i := range values {
 			values[i] = new(interface{})
 		}
 
-		// Scan the current row into the values slice
 		if err := rows.Scan(values...); err != nil {
 			log.Println("Failed to scan row:", err)
 			return
 		}
 
-		// Iterate over the values and add them to the map
 		for i, col := range columns {
 			val := *(values[i].(*interface{}))
 			if bytesVal, ok := val.([]byte); ok {
@@ -90,17 +84,14 @@ func getApiHandler(g *gin.Context) {
 }
 
 func getTablesHandler(g *gin.Context) {
-	// Show tables query
 	rows, err := db.Raw("SHOW TABLES").Rows()
 	if err != nil {
 		log.Fatalf("Error executing query: %v", err)
 	}
 	defer rows.Close()
 
-	// Create a map to store the query results
 	var tables []Table
 
-	// Iterate over the rows and scan into the map
 	for rows.Next() {
 		var tableName string
 		if err := rows.Scan(&tableName); err != nil {
@@ -121,7 +112,6 @@ func getTableHandler(g *gin.Context) {
 
 	var columns []TableDesc
 
-	// Iterate over rows and populate TableDesc
 	for rows.Next() {
 		var desc TableDesc
 		if err := rows.Scan(&desc.Field, &desc.Type, &desc.Null, &desc.Key, &desc.Default, &desc.Extra); err != nil {

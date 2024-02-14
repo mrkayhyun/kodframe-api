@@ -16,7 +16,7 @@ func SetupRouter() *gin.Engine {
 	// api
 	r.GET("/api/:id", getApiHandler)
 	// db
-	r.GET("/db/tables", getTablesHandler)
-	r.GET("/db/table/:id", getTableHandler)
+	r.GET("/db/tables", getTablesHandler)   // 테이블 리스트 조회
+	r.GET("/db/table/:id", getTableHandler) // 테이블 상세정보 조회
 	return r
 }
